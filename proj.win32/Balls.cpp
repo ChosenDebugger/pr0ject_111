@@ -5,7 +5,45 @@
 #include<math.h>
 #include"BattleField.h"
 #include"AiBalls.h"
-
+const char * randomName(float randomNum)
+{
+	if (randomNum<0.33f)
+	{
+		return "teri.png";
+	}
+	else if (randomNum < 0.66f)
+	{
+		return "rotate.png";
+	}
+	else
+	{
+		return "greenhat.png";
+	}
+}
+bool isInWater(float x,float y)
+{
+	if (x <= -2560 || x >= 2560)
+	{
+		return false;
+	}
+	else if(x<=-2432||x>=2432)
+	{
+		if (y >= -2560 && y <= 2560)
+		{
+			if (y >= 256 || y <= -256)return true;
+			else return false;
+		}
+	}
+	else
+	{
+		if ((y >= -2560 && y <= -2432) || (y >= 2432 && y <= 2560))
+		{
+			if (x >= 256 || x <= -256)return true;
+			else return false;
+		}
+	}
+	return false;
+}
 Balls* Balls::createWithFileName(const std::string & filename)
 {
 	Balls *ball = new(std::nothrow) Balls;
@@ -40,8 +78,15 @@ bool Balls::initStatusMin()
 {
 	this->_level = 1;
 	this->_identity = 0;
-	this->setScale(0.1f);
-	this->_radius = 26;
+	this->_radius = 20;
+	this->setScale(0.08f);
+	return true;
+}
+bool Balls::initStatusBoom()
+{
+	this->_level = 40;
+	this->_identity = -1;
+	this->updateRadius();
 	return true;
 }
 
@@ -87,7 +132,10 @@ void Balls:: addLevel(const int delLevel)                              //after e
 float Balls::speed()
 {
 	if (this->_level > 1000)this->_level = 1000;
-	return 7.25 - 0.00625*this->_level;
+	float ballSpeed = 7.25 - 0.00625*this->_level;
+	if (this->getID() == 2)ballSpeed = ballSpeed*0.9;
+	if (isInWater(this->getPositionX(), this->getPositionY())) ballSpeed = ballSpeed*0.6;
+	return ballSpeed;
 }
 
 void Balls::division(float x, float y, cocos2d::EventKeyboard::KeyCode &_keycode, cocos2d::Layer* _Battelfield)
@@ -112,6 +160,37 @@ void Balls::division(float x, float y, cocos2d::EventKeyboard::KeyCode &_keycode
 		_Battelfield->addChild(substitute, 1);
 	}
 }
+void Balls::divisionBoom( cocos2d::Layer* _Battelfield)
+{
+	cocos2d::Sprite* substitute;
+	if (dynamic_cast<Combat *>(this->getParent())->_meBall == 1)
+	{
+		substitute = cocos2d::Sprite::create("cry_dead.png");
+	}
+	else if (dynamic_cast<Combat *>(this->getParent())->_meBall == 2)
+	{
+		substitute= cocos2d::Sprite::create("xibi_dead.png");
+	}
+	else
+	{
+		substitute= cocos2d::Sprite::create("huaJi_dead.png");
+	}
+	substitute->setPosition(this->getPosition());
+	if (this->_level <= 40)
+	{
+		substitute->setScale(this->getScale()/2);
+		this->getParent()->removeChild(this);
+	}
+	else
+	{
+		this->_level = _level / 2;
+		this->updateRadius();
+		substitute->setScale(this->getScale());
+	}
+	_Battelfield->addChild(substitute);
+
+}
+
 void Balls::movement(float x, float y, cocos2d::Layer *_Battlefield, int player_id)
 {
 	cocos2d::Vector<Node*> _allballs;
@@ -142,34 +221,40 @@ void Balls::movement(float x, float y, cocos2d::Layer *_Battlefield, int player_
 }
 void Balls::swallow(cocos2d::Layer *_Battlefield)
 {
-	float thisX = this->getPositionX();
-	float thisY = this->getPositionY();
 	cocos2d::Vector<Node*> _allballs;
 	_allballs = _Battlefield->getChildren();
 	for (auto _target : _allballs)
 	{
 		Balls* target_b = dynamic_cast<Balls*>(_target);
-		if (target_b != nullptr&&target_b->_identity != this->_identity&& abs(target_b->getPositionX()-thisX)<234 && abs(target_b->getPositionY() - thisY)<234)
+		if (target_b != nullptr&&target_b->_identity != this->_identity)
 		{
 			float _distance = cocos2d::ccpDistance(target_b->getPosition(), this->getPosition());
-			if (_distance <= this->_radius + target_b->_radius)
+			if (target_b->_identity != -1)
 			{
-				if (this->_level > target_b->_level)
+				if (_distance <= this->_radius + target_b->_radius)
 				{
-					if (target_b->getID() == 2)
+					if (this->_level > target_b->_level)
 					{
-						auto newAI = AiBalls::createWithFileName(_Battlefield, "food_b.png", 2, target_b->getSUBID(), this->getLevel()+(target_b->getSUBID()*30));
-						newAI->setPosition(newAI->getNewPosition(target_b->getSUBID()));
+						_Battlefield->removeChild(target_b);
+						this->addLevel(target_b->_level);
+						if (target_b->getID() == 0)dynamic_cast<Food *>(_Battlefield)->foodCount--;
+						if (target_b->getID() == 2)
+						{
+							float randomNum = CCRANDOM_0_1();
+							auto newAI = AiBalls::createWithFileName(_Battlefield, randomName(randomNum), 2, target_b->getSUBID(), this->getLevel() + (target_b->getSUBID() * 30));
+							newAI->setPosition(newAI->getNewPosition(target_b->getSUBID()));
+						}
 					}
-					_Battlefield->removeChild(target_b);
-					this->addLevel(target_b->_level);
-					if (target_b->getID() == 0)dynamic_cast<Food *>(_Battlefield)->foodCount--;
+					else if (this->_level < target_b->_level)
+					{
+						_Battlefield->removeChild(this);
+					}
 				}
-				else if (this->_level < target_b->_level)
-				{
-					_Battlefield->removeChild(this);
-					if (this->getID() == 0)dynamic_cast<Food *>(_Battlefield)->foodCount--;
-				}
+			}
+			else if (_distance <= this->_radius + target_b->_radius)
+			{
+				_Battlefield->removeChild(target_b);
+				this->divisionBoom(_Battlefield);
 			}
 		}
 	}
