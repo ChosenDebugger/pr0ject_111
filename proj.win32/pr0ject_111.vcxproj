@@ -149,6 +149,8 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClCompile Include="..\Classes\AppDelegate.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <ClCompile Include="AiBalls.cpp" />
+    <ClCompile Include="Balls.cpp" />
     <ClCompile Include="BallSelectMenu.cpp" />
     <ClCompile Include="BattleField.cpp" />
     <ClCompile Include="main.cpp" />
@@ -156,13 +158,13 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Classes\AppDelegate.h" />
+    <ClInclude Include="AiBalls.h" />
     <ClInclude Include="Balls.h" />
     <ClInclude Include="BallSelectMenu.h" />
     <ClInclude Include="BattleField.h" />
     <ClInclude Include="Character.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="MainMenu.h" />
-    <ClInclude Include="foodcreator.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cocos2d\cocos\2d\libcocos2d.vcxproj">

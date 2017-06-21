@@ -27,6 +27,12 @@
     <ClCompile Include="BattleField.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Balls.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="AiBalls.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -50,7 +56,7 @@
     <ClInclude Include="BattleField.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="foodcreator.h">
+    <ClInclude Include="AiBalls.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
