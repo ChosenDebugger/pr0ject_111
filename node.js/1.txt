@@ -1,0 +1,22 @@
+void MainBG::update_ai(float dt)
+{
+	std::string name_ai = "XB";
+	Balls* ai_ball = dynamic_cast<Balls*>(this->getChildByName("XB"));
+	ai_ball->movement(name_ai, x_ai, y_ai, this);
+	ai_ball->swallow(this);
+	ai_ball->updateRadius();
+	_keycode = cocos2d::EventKeyboard::KeyCode::KEY_NONE;
+}
+
+
+void MainBG::update_Ai_Direction(float dt)
+{
+	x_ai = CCRANDOM_0_1() * 12800;
+	y_ai = CCRANDOM_0_1() * 12800;
+}
+
+
+	Balls*zz = Balls::createWithFileName("xibi.png");
+	zz->initStatus(10, 1);
+	zz->setPosition(Vec2(visibleSize.width / 2 + originPos.x - 300, visibleSize.height / 2 + originPos.y + 100));
+	this->addChild(zz, 1,"XB");
